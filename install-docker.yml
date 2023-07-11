@@ -1,0 +1,31 @@
+---
+- name: Install Docker on localhost
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Install required packages
+      yum:
+        name:
+          - yum-utils
+          - device-mapper-persistent-data
+          - lvm2
+        state: present
+      become: true
+
+    - name: Add Docker repository
+      command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+      become: true
+
+    - name: Install Docker Engine
+      yum:
+        name: docker-ce
+        state: present
+      become: true
+
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      become: true
+
