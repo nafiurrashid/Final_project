@@ -1,0 +1,22 @@
+---
+- name: Update packages and install Vim on target hosts
+  hosts: k8s
+  become: true
+  tasks:
+    - name: Run dnf update
+      yum:
+        name: '*'
+        state: latest
+        update_cache: yes
+    #  run_once: true
+
+    - name: Install Vim package
+      yum:
+        name: 
+          - vim
+          - curl
+          - wget
+          - open-vm-tools
+        state: present
+    #  run_once: true
+
