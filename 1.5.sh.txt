@@ -1,0 +1,52 @@
+#!/bin/bash
+yum update -y
+# Disable SELinux
+sudo sed -i 's/^SELINUX=.*/SELINUX=disabled/' /etc/selinux/config
+
+# Stop and disable firewalld
+systemctl stop firewalld
+systemctl disable firewalld
+
+# Install required packages
+packages=(
+    vim
+    curl
+    wget
+    open-vm-tools
+    bash-completion
+    git
+    mariadb-server
+    java-11-openjdk
+)
+yum install -y "${packages[@]}"
+
+# Start and enable MariaDB
+systemctl start mariadb
+systemctl enable mariadb
+
+# Set Java environment variables
+export JAVA_HOME=/usr/lib/jvm/jre-openjdk
+echo "JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
+export PATH=$JAVA_HOME/bin:$PATH
+echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> ~/.bashrc
+
+# Download and install Apache Maven
+maven_version="3.9.3"
+maven_url="https://dlcdn.apache.org/maven/maven-3/$maven_version/binaries/apache-maven-$maven_version-bin.tar.gz"
+maven_archive="/tmp/apache-maven-$maven_version-bin.tar.gz"
+
+wget --no-check-certificate "$maven_url" -O "$maven_archive"
+
+if [ -f "$maven_archive" ]; then
+    # Extract Maven archive
+    tar xf "$maven_archive" -C /opt/
+    mv "/opt/apache-maven-$maven_version" "/opt/maven"
+    export M2_HOME=/opt/maven
+    echo "M2_HOME=$M2_HOME" >> ~/.bashrc
+    export MAVEN_HOME=/opt/maven
+    echo "MAVEN_HOME=$MAVEN_HOME" >> ~/.bashrc
+    export PATH=$M2_HOME/bin:$PATH
+    echo "export PATH=\$M2_HOME/bin:\$PATH" >> ~/.bashrc
+else
+    echo "Failed to download Apache Maven. Check the URL or try again later."
+fi
